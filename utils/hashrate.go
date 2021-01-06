@@ -115,7 +115,7 @@ func HashrateGetNew(crypto string) HashrateQuestion {
 	checkCodeText := pwdpreInfo.Pwdpre + stringSubpwd
 	switch upperCrypto {
 	case "CRC32":
-		pwdpreInfo.CheckCode = CRC32(checkCodeText)
+		pwdpreInfo.CheckCode = StrToCRC32DecStr(checkCodeText)
 	case "CRC64":
 		pwdpreInfo.CheckCode = StrToCRC64DecStr(checkCodeText)
 	case "MD5":
