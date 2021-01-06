@@ -15,7 +15,11 @@ func Uint64ToDecStr(ui64 uint64) string {
 
 var crc32Table = crc32.MakeTable(0xD5828281)
 
-func CRC32(str string) string {
+func StrToCRC32UInt(str string) uint32 {
+	return crc32.Checksum([]byte(str), crc32Table)
+}
+
+func StrToCRC32DecStr(str string) string {
 	crc32Int := crc32.Checksum([]byte(str), crc32Table)
 	return strconv.FormatUint(uint64(crc32Int), 10)
 }
