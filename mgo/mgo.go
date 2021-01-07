@@ -31,11 +31,11 @@ func (mongo Mongo) GetQueue(collection string, bsonM bson.M, iLimit int) ([]bson
 		fmt.Println(err)
 		return AllRows, err
 	}
-	arr := []interface{}{}
+	idarr := []interface{}{}
 	for _, row := range AllRows {
-		arr = append(arr, row["_id"])
+		idarr = append(idarr, row["_id"])
 	}
-	selector := bson.M{"_id": bson.M{"$in": arr}}
+	selector := bson.M{"_id": bson.M{"$in": idarr}}
 	data := bson.M{"$set": bson.M{"queued": utils.TimestampInt32()}}
 	_, err := c.UpdateAll(selector, data)
 	if err != nil {

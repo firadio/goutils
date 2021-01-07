@@ -32,7 +32,7 @@ func New(sHostPort string, sPassword string, iDatabase int) Redis {
 	return redis
 }
 
-func RedisExec_Do(redis_pool *red.Pool, cmd string, key interface{}, args ...interface{}) (interface{}, error) {
+func RedisExec_Do(redis_pool *red.Pool, cmd string, key string, args ...string) (interface{}, error) {
 	con := redis_pool.Get()
 	if err := con.Err(); err != nil {
 		return nil, err
@@ -58,8 +58,8 @@ func (redis Redis) LLEN(key string) int64 {
 	return ret.(int64)
 }
 
-func (redis Redis) LPUSH(key string, element string) int64 {
-	ret, err := RedisExec_Do(redis.pool, "LPUSH", key, element)
+func (redis Redis) LPUSH(key string, element []string) int64 {
+	ret, err := RedisExec_Do(redis.pool, "LPUSH", key, element...)
 	if err != nil {
 		fmt.Printf("LPUSH(%s) %s\r\n", key, err)
 		return 0
