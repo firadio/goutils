@@ -49,7 +49,7 @@ func user_get_ip_list(qty int) []string {
 	query.Add("token", token)
 	query.Add("qty", strconv.Itoa(qty)) //每次获取IP数量
 	query.Add("country", "us")          //国家
-	query.Add("time", "5")              //时效（分钟）
+	query.Add("time", "10")             //时效（分钟）
 	query.Add("format", "json")         //返回格式
 	query.Add("protocol", "socks5")     //筛选格式
 	query.Add("filter", "1")            //是否去重

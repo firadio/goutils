@@ -66,3 +66,15 @@ func (redis Redis) LPUSH(key string, element []string) int64 {
 	}
 	return ret.(int64)
 }
+
+func (redis Redis) RPOP(key string) string {
+	ret, err := RedisExec_Do(redis.pool, "RPOP", key)
+	if err != nil {
+		fmt.Printf("RPOP(%s) %s\r\n", key, err)
+		return ""
+	}
+	if ret == nil {
+		return ""
+	}
+	return string(ret.([]byte))
+}

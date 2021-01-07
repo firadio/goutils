@@ -44,3 +44,12 @@ func (mongo Mongo) GetQueue(collection string, bsonM bson.M, iLimit int) ([]bson
 	}
 	return AllRows, nil
 }
+
+func (mongo Mongo) UpdateById(collection string, id bson.ObjectId, data bson.M) {
+	selector := bson.M{"_id": id}
+	data = bson.M{"$set": data}
+	if err := mongo.Db.C(collection).Update(selector, data); err != nil {
+		fmt.Println(err)
+		return
+	}
+}
