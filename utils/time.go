@@ -9,6 +9,11 @@ func TimeNow() time.Time {
 	return time.Now().In(cstZone)
 }
 
+func DateTime() string {
+	now := TimeNow()
+	return now.Format("2006-01-02 15:04:05")
+}
+
 func TimestampFloat64() float64 {
 	// 返回是秒级时间戳（带小数点的）
 	return float64(TimeNow().UnixNano()) / 1e9
