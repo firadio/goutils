@@ -109,7 +109,7 @@ func GetBlackByIpAddrWithProxy(ipaddr string, ProxyIpport string) map[string][]s
 func GetBlackByDomain(flg chan []string, sDomain string, ipaddr string, ProxyIpport string) {
 	//defer close(flg)
 	sUrl := "http://f.vision/index.php/black/" + sDomain + "/" + ipaddr
-	bResult, err := ProxyHttp(ProxyIpport, sUrl)
+	bResult, err := ProxySocks5(ProxyIpport, sUrl)
 	if err != nil {
 		//fmt.Println(err)
 		flg <- []string{sDomain, "ERROR"}

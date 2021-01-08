@@ -11,7 +11,7 @@ import (
 	"golang.org/x/net/proxy"
 )
 
-func ProxyHttp(socks5ipport string, sUrl string) ([]byte, error) {
+func ProxySocks5(socks5ipport string, sUrl string) ([]byte, error) {
 	// create a socks5 dialer
 	dialer, err := proxy.SOCKS5("tcp", socks5ipport, nil, proxy.Direct)
 	if err != nil {
@@ -34,9 +34,9 @@ func ProxyHttp(socks5ipport string, sUrl string) ([]byte, error) {
 	return body, nil
 }
 
-func GetLocationByProxy(ipport string) ([]string, error) {
+func GetLocationBySocks5(ipport string) ([]string, error) {
 	sUrl := "http://myip.ipip.net"
-	bResult, err := ProxyHttp(ipport, sUrl)
+	bResult, err := ProxySocks5(ipport, sUrl)
 	s := []string{}
 	if err != nil {
 		return s, err
