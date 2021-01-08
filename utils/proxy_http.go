@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"errors"
 	"io/ioutil"
+
 	//"log"
 	"net/http"
 	"strings"
@@ -32,24 +34,27 @@ func ProxyHttp(socks5ipport string, sUrl string) ([]byte, error) {
 	return body, nil
 }
 
-func GetLocationByProxy(ipport string) []string {
+func GetLocationByProxy(ipport string) ([]string, error) {
 	sUrl := "http://myip.ipip.net"
 	bResult, err := ProxyHttp(ipport, sUrl)
 	s := []string{}
 	if err != nil {
-		return s
+		return s, err
 	}
 	s = strings.Split(string(bResult), "  ")
+	if len(s) != 3 {
+		return s, errors.New("返回的参数不是3个")
+	}
 	ip := strings.Split(s[0], "：")
 	if len(ip) < 2 {
-		return s
+		return s, errors.New("IP没读到")
 	}
 	s[0] = ip[1]
 	location := strings.Split(s[1], "：")
 	if len(location) < 2 {
-		return s
+		return s, errors.New("地区没读到")
 	}
 	s[1] = location[1]
 	s[2] = strings.TrimRight(s[2], "\n")
-	return s
+	return s, nil
 }
