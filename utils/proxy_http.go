@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 
 	//"log"
@@ -42,8 +43,9 @@ func GetLocationBySocks5(ipport string) ([]string, error) {
 		return s, err
 	}
 	s = strings.Split(string(bResult), "  ")
-	if len(s) != 3 {
-		return s, errors.New("返回的参数不是3个")
+	sLen := len(s)
+	if sLen != 3 {
+		return s, errors.New(fmt.Sprintf("GetLocationBySocks5返回了 %d 个参数", sLen))
 	}
 	ip := strings.Split(s[0], "：")
 	if len(ip) < 2 {
