@@ -1,20 +1,20 @@
-package utils
+package proxyip
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
-	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/firadio/goutils/utils"
 )
 
 type ProxyIP struct {
 	qty               int
-	list              []string
+	list              []*ProxyInfo
 	url_iplist_get    string
 	url_whitelist_add string
 	url_whitelist_get string
@@ -33,7 +33,12 @@ func (proxyip *ProxyIP) SetURL(url_iplist_get string, url_whitelist_add string, 
 	proxyip.url_whitelist_del = url_whitelist_del
 }
 
-func (proxyip *ProxyIP) ProxyGetOne() string {
+type ProxyInfo struct {
+	SocksAddr string
+	SocksPort int
+}
+
+func (proxyip *ProxyIP) ProxyGetOne() *ProxyInfo {
 	//del_whitelist_by_remark("golang")
 	//return
 	if len(proxyip.list) == 0 {
@@ -48,8 +53,8 @@ func (proxyip *ProxyIP) ProxyGetOne() string {
 	return item
 }
 
-func (proxyip *ProxyIP) user_get_ip_list(qty int) []string {
-	aRet := []string{}
+func (proxyip *ProxyIP) user_get_ip_list(qty int) []*ProxyInfo {
+	aRet := []*ProxyInfo{}
 	sUrl := proxyip.url_iplist_get
 	statusCode, apiResJson, err := HttpRequestJson("GET", sUrl, nil, nil)
 	if err != nil {
@@ -69,7 +74,16 @@ func (proxyip *ProxyIP) user_get_ip_list(qty int) []string {
 	aRows := apiResJson.Data.([]interface{})
 	for _, _mRow := range aRows {
 		mRow := _mRow.(string)
-		aRet = append(aRet, mRow)
+		socks5Arr := strings.Split(mRow, ":")
+		if len(socks5Arr) != 2 {
+			continue
+		}
+		socksPort, err := strconv.Atoi(socks5Arr[1])
+		if err != nil {
+			continue
+		}
+		socksInfo := &ProxyInfo{SocksAddr: socks5Arr[0], SocksPort: socksPort}
+		aRet = append(aRet, socksInfo)
 	}
 	return aRet
 }
@@ -143,7 +157,7 @@ func HttpRequestJson(method string, sUrl string, query url.Values, userReqJson i
 	if err != nil {
 		return 0, apiResJson, err
 	}
-	statusCode, clientResBody, err := HttpRequestByte(method, sUrl, query, bytes.NewBuffer(bReqData))
+	statusCode, clientResBody, err := utils.HttpRequestByte(method, sUrl, query, bytes.NewBuffer(bReqData))
 	if err != nil {
 		return statusCode, apiResJson, err
 	}
@@ -152,26 +166,4 @@ func HttpRequestJson(method string, sUrl string, query url.Values, userReqJson i
 		return statusCode, apiResJson, err
 	}
 	return statusCode, apiResJson, nil
-}
-
-func HttpRequestByte(method string, sUrl string, query url.Values, body io.Reader) (int, []byte, error) {
-	//以byte数组返回结果
-	if query != nil {
-		sUrl += "?" + query.Encode()
-	}
-	clientReq, err := http.NewRequest(method, sUrl, body)
-	if err != nil {
-		return 0, nil, err
-	}
-	httpClient := &http.Client{}
-	clientRes, err := httpClient.Do(clientReq) //向后端服务器提交数据
-	if err != nil {
-		return 0, nil, err
-	}
-	clientResBody, err := ioutil.ReadAll(clientRes.Body) //取得后端服务器返回的数据
-	clientRes.Body.Close()
-	if err != nil {
-		return clientRes.StatusCode, nil, err
-	}
-	return clientRes.StatusCode, clientResBody, nil
 }
