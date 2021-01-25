@@ -157,7 +157,7 @@ func HttpRequestJson(method string, sUrl string, query url.Values, userReqJson i
 	if err != nil {
 		return 0, apiResJson, err
 	}
-	statusCode, clientResBody, err := utils.HttpRequestByte(method, sUrl, query, bytes.NewBuffer(bReqData))
+	statusCode, clientResBody, err := utils.HttpRequestByte(method, sUrl, query, bytes.NewBuffer(bReqData), nil)
 	if err != nil {
 		return statusCode, apiResJson, err
 	}

@@ -53,3 +53,10 @@ func (mongo Mongo) UpdateById(collection string, id bson.ObjectId, data bson.M) 
 		return
 	}
 }
+
+func (mongo Mongo) Insert(collection string, data interface{}) {
+	if err := mongo.Db.C(collection).Insert(data); err != nil {
+		fmt.Println(err)
+		return
+	}
+}

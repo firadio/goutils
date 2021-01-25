@@ -7,7 +7,7 @@ import (
 	"net/url"
 )
 
-func HttpRequestByte(method string, sUrl string, query url.Values, body io.Reader) (int, []byte, error) {
+func HttpRequestByte(method string, sUrl string, query url.Values, body io.Reader, httpHeader http.Header) (int, []byte, error) {
 	//以byte数组返回结果
 	if query != nil {
 		sUrl += "?" + query.Encode()
@@ -15,6 +15,11 @@ func HttpRequestByte(method string, sUrl string, query url.Values, body io.Reade
 	clientReq, err := http.NewRequest(method, sUrl, body)
 	if err != nil {
 		return 0, nil, err
+	}
+	if httpHeader != nil {
+		clientReq.Header = httpHeader
+	} else {
+		clientReq.Header.Set("user-agent", "")
 	}
 	httpClient := &http.Client{}
 	clientRes, err := httpClient.Do(clientReq) //向后端服务器提交数据
