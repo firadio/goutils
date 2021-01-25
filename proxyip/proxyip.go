@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/firadio/goutils/utils"
@@ -38,9 +39,12 @@ type ProxyInfo struct {
 	SocksPort int
 }
 
+var Mutex sync.Mutex
+
 func (proxyip *ProxyIP) ProxyGetOne() *ProxyInfo {
 	//del_whitelist_by_remark("golang")
 	//return
+	Mutex.Lock()
 	if len(proxyip.list) == 0 {
 		aLine := proxyip.user_get_ip_list(proxyip.qty)
 		for _, ipaddrport := range aLine {
@@ -50,6 +54,7 @@ func (proxyip *ProxyIP) ProxyGetOne() *ProxyInfo {
 	}
 	item := proxyip.list[0] // 先进先出
 	proxyip.list = proxyip.list[1:len(proxyip.list)]
+	Mutex.Unlock()
 	return item
 }
 
