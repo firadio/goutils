@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 
 	"golang.org/x/net/proxy"
 )
@@ -36,6 +37,10 @@ func (http1 *HttpStruct) SetSocks5(socks5ipport string) error {
 	return nil
 }
 
+func (http1 *HttpStruct) NoTransport() {
+	http1.HttpClient.Transport = nil
+}
+
 func (http1 *HttpStruct) RequestByte(method string, sUrl string, query url.Values, body io.Reader, _useragent string) (int, []byte, error) {
 	//以byte数组返回结果
 	if query != nil {
@@ -57,4 +62,8 @@ func (http1 *HttpStruct) RequestByte(method string, sUrl string, query url.Value
 		return clientRes.StatusCode, nil, errors.New("RequestByte-ReadAll:" + err.Error())
 	}
 	return clientRes.StatusCode, clientResBody, nil
+}
+
+func (http1 *HttpStruct) SetTimeout(_duration time.Duration) {
+	http1.HttpClient.Timeout = _duration
 }
