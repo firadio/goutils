@@ -37,3 +37,11 @@ func TimestampMsInt64() int64 {
 func Sleep(ms int) {
 	time.Sleep(time.Duration(ms) * time.Millisecond)
 }
+
+func GetTimestampByTZ(s string) int64 {
+	tm, err := time.Parse("2006-01-02T15:04:05Z", s)
+	if err != nil {
+		return 0
+	}
+	return tm.Unix()
+}
