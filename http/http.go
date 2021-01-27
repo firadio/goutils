@@ -41,7 +41,7 @@ func (http1 *HttpStruct) NoTransport() {
 	http1.HttpClient.Transport = nil
 }
 
-func (http1 *HttpStruct) RequestByte(method string, sUrl string, query url.Values, body io.Reader, _useragent string) (int, []byte, error) {
+func (http1 *HttpStruct) RequestByte(method string, sUrl string, query url.Values, body io.Reader, header map[string]string) (int, []byte, error) {
 	//以byte数组返回结果
 	if query != nil {
 		sUrl += "?" + query.Encode()
@@ -50,8 +50,11 @@ func (http1 *HttpStruct) RequestByte(method string, sUrl string, query url.Value
 	if err != nil {
 		return 0, nil, err
 	}
-	clientReq.Header.Set("user-agent", _useragent)
-	clientReq.Header.Set("content-type", "application/json")
+	if header != nil {
+		for k, v := range header {
+			clientReq.Header.Set(k, v)
+		}
+	}
 	clientRes, err := http1.HttpClient.Do(clientReq) //向后端服务器提交数据
 	if err != nil {
 		return 0, nil, errors.New("RequestByte-HttpClient-Do:" + err.Error())
