@@ -70,3 +70,9 @@ func (http1 *HttpStruct) RequestByte(method string, sUrl string, query url.Value
 func (http1 *HttpStruct) SetTimeout(_duration time.Duration) {
 	http1.HttpClient.Timeout = _duration
 }
+
+func (http1 *HttpStruct) Close() {
+	http1.HttpClient.CloseIdleConnections()
+	http1.HttpClient = nil
+	http1 = nil
+}
