@@ -58,15 +58,20 @@ func (proxyip *ProxyIP) ProxyGetOne() *ProxyInfo {
 	return item
 }
 
+func (proxyip *ProxyIP) ProxyGetOneText() string {
+	info := proxyip.ProxyGetOne()
+	return info.SocksAddr + ":" + strconv.Itoa(info.SocksPort)
+}
+
 func (proxyip *ProxyIP) user_get_ip_list(qty int) []*ProxyInfo {
-	aRet := []*ProxyInfo{}
 	sUrl := proxyip.url_iplist_get
 	statusCode, apiResJson, err := HttpRequestJson("GET", sUrl, nil, nil)
 	if err != nil {
 		fmt.Println("user_get_ip_list", err)
-		return aRet
+		return proxyip.user_get_ip_list(qty)
 	}
 	if apiResJson.Code == 101 {
+		//没有加入白名单
 		fmt.Println("GET_IP_LIST", statusCode, apiResJson.Code, apiResJson.Msg)
 		aMsg := strings.SplitN(string(apiResJson.Msg), " ", 2)
 		ip := aMsg[0]
@@ -76,6 +81,7 @@ func (proxyip *ProxyIP) user_get_ip_list(qty int) []*ProxyInfo {
 		time.Sleep(5 * time.Second)
 		return proxyip.user_get_ip_list(qty)
 	}
+	aRet := []*ProxyInfo{}
 	aRows := apiResJson.Data.([]interface{})
 	for _, _mRow := range aRows {
 		mRow := _mRow.(string)
