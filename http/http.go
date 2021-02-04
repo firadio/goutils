@@ -12,16 +12,28 @@ import (
 )
 
 type Class struct {
-	HttpClient    *http.Client
-	RequestUrl    string
-	RequestHeader map[string]string
-	ResponseBody  []byte
+	HttpClient         *http.Client
+	RequestUrl         string
+	RequestHeader      map[string]string
+	ResponseBody       []byte
+	ResponseStatusCode int
 }
 
 func New() *Class {
 	this := &Class{}
 	this.HttpClient = &http.Client{}
 	return this
+}
+
+func (this *Class) SetProxy(hostport string) error {
+	proxyUrl, err := url.Parse("http://" + hostport)
+	if err != nil {
+		return err
+	}
+	httpTransport := &http.Transport{}
+	this.HttpClient.Transport = httpTransport
+	httpTransport.Proxy = http.ProxyURL(proxyUrl)
+	return nil
 }
 
 func (this *Class) SetSocks5(socks5ipport string) error {
@@ -64,6 +76,7 @@ func (this *Class) RequestByte(method string, sUrl string, query url.Values, bod
 	if err != nil {
 		return 0, nil, errors.New("RequestByte-HttpClient-Do:" + err.Error())
 	}
+	this.ResponseStatusCode = clientRes.StatusCode
 	clientResBody, err := ioutil.ReadAll(clientRes.Body) //取得后端服务器返回的数据
 	this.ResponseBody = clientResBody
 	clientRes.Body.Close()
