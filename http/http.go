@@ -1,7 +1,9 @@
 package http
 
 import (
+	"compress/gzip"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -78,6 +80,7 @@ func (this *Class) RequestByte(method string, sUrl string, query url.Values, bod
 	}
 	this.ResponseStatusCode = clientRes.StatusCode
 	clientResBody, err := ioutil.ReadAll(clientRes.Body) //取得后端服务器返回的数据
+	fmt.Println(string(clientResBody))
 	this.ResponseBody = clientResBody
 	clientRes.Body.Close()
 	if err != nil {
@@ -94,4 +97,28 @@ func (this *Class) Close() {
 	this.HttpClient.CloseIdleConnections()
 	this.HttpClient = nil
 	this = nil
+}
+
+// client 解析 gzip 返回
+func ClientUncompress() {
+	client := http.Client{}
+	req, err := http.NewRequest("GET", "http://www.baidu.com", nil)
+	req.Header.Add("Content-Encoding", "gzip")
+	req.Header.Add("Accept-Encoding", "gzip")
+	resp, err := client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	var buf [1024 * 1024]byte
+	reader, err := gzip.NewReader(resp.Body)
+	if err != nil {
+		return
+	}
+	_, err = reader.Read(buf[:])
+	if err != nil {
+		return
+	}
+	reader.Close()
 }
