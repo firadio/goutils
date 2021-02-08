@@ -15,11 +15,14 @@ type Class struct {
 	list           []*ProxyInfo
 	url_iplist_get string
 	Enable         bool
+	Unique         bool //是否去重
+	mIpport        map[string]time.Time
 }
 
 func New() *Class {
-	proxyip := &Class{}
-	return proxyip
+	this := &Class{}
+	this.mIpport = map[string]time.Time{}
+	return this
 }
 
 func (this *Class) SetURL(url_iplist_get string) {
@@ -34,7 +37,14 @@ type ProxyInfo struct {
 
 var Mutex sync.Mutex
 
-func (proxyip *Class) PutList(ipport string) {
+func (this *Class) RemoveUnique(ipport string) {
+	Mutex.Lock()
+	defer Mutex.Unlock()
+	delete(this.mIpport, ipport)
+}
+
+func (this *Class) PutList(ipport string) {
+	this.RemoveUnique(ipport)
 	socks5Arr := strings.Split(ipport, ":")
 	if len(socks5Arr) != 2 {
 		return
@@ -44,17 +54,35 @@ func (proxyip *Class) PutList(ipport string) {
 		return
 	}
 	socksInfo := &ProxyInfo{SocksAddr: socks5Arr[0], SocksPort: socksPort}
-	proxyip.list = append([]*ProxyInfo{socksInfo}, proxyip.list...)
+	this.list = append([]*ProxyInfo{socksInfo}, this.list...)
 }
 
-func (proxyip *Class) ProxyGetText() string {
-	proxyInfo1 := proxyip.ProxyGetOne()
+func (this *Class) ProxyGetText() string {
+	proxyInfo1 := this.ProxyGetOne()
 	if proxyInfo1 == nil {
-		time.Sleep(time.Second)
 		fmt.Println("ProxyGetText获取IP失败，开始重试")
-		return proxyip.ProxyGetText()
+		time.Sleep(time.Second)
+		return this.ProxyGetText()
 	}
-	return proxyInfo1.SocksAddr + ":" + strconv.Itoa(proxyInfo1.SocksPort)
+	ipport := proxyInfo1.SocksAddr + ":" + strconv.Itoa(proxyInfo1.SocksPort)
+	if this.Unique {
+		Mutex.Lock()
+		time1, exists := this.mIpport[ipport]
+		Mutex.Unlock()
+		if exists {
+			diff := time.Now().Sub(time1)
+			if diff.Minutes() < 5 {
+				//fmt.Println("ProxyGetText获取IP：" + ipport + "有重复，开始重试")
+				//fmt.Print("#")
+				time.Sleep(time.Second)
+				return this.ProxyGetText()
+			}
+		}
+		Mutex.Lock()
+		this.mIpport[ipport] = time.Now()
+		Mutex.Unlock()
+	}
+	return ipport
 }
 
 func (proxyip *Class) ProxyGetOne() *ProxyInfo {

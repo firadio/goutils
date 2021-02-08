@@ -14,7 +14,7 @@ import (
 )
 
 type Class struct {
-	HttpClient         http.Client
+	HttpClient         *http.Client
 	RequestUrl         string
 	RequestHeader      map[string]string
 	ResponseBody       []byte
@@ -24,7 +24,7 @@ type Class struct {
 
 func New() Class {
 	this := Class{}
-	this.HttpClient = http.Client{}
+	this.HttpClient = &http.Client{}
 	return this
 }
 
@@ -98,7 +98,7 @@ func (this *Class) SetTimeout(_duration time.Duration) {
 
 func (this *Class) Close() {
 	this.HttpClient.CloseIdleConnections()
-	//this.HttpClient = nil
+	this.HttpClient = nil
 	this = nil
 }
 
