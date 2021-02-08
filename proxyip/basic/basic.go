@@ -10,19 +10,21 @@ import (
 	"github.com/firadio/goutils/utils"
 )
 
-type ProxyIP struct {
+type Class struct {
 	qty            int
 	list           []*ProxyInfo
 	url_iplist_get string
+	Enable         bool
 }
 
-func New() *ProxyIP {
-	proxyip := &ProxyIP{}
+func New() *Class {
+	proxyip := &Class{}
 	return proxyip
 }
 
-func (proxyip *ProxyIP) SetURL(url_iplist_get string) {
-	proxyip.url_iplist_get = url_iplist_get
+func (this *Class) SetURL(url_iplist_get string) {
+	this.Enable = true
+	this.url_iplist_get = url_iplist_get
 }
 
 type ProxyInfo struct {
@@ -32,7 +34,7 @@ type ProxyInfo struct {
 
 var Mutex sync.Mutex
 
-func (proxyip *ProxyIP) PutList(ipport string) {
+func (proxyip *Class) PutList(ipport string) {
 	socks5Arr := strings.Split(ipport, ":")
 	if len(socks5Arr) != 2 {
 		return
@@ -45,7 +47,7 @@ func (proxyip *ProxyIP) PutList(ipport string) {
 	proxyip.list = append([]*ProxyInfo{socksInfo}, proxyip.list...)
 }
 
-func (proxyip *ProxyIP) ProxyGetText() string {
+func (proxyip *Class) ProxyGetText() string {
 	proxyInfo1 := proxyip.ProxyGetOne()
 	if proxyInfo1 == nil {
 		time.Sleep(time.Second)
@@ -55,7 +57,7 @@ func (proxyip *ProxyIP) ProxyGetText() string {
 	return proxyInfo1.SocksAddr + ":" + strconv.Itoa(proxyInfo1.SocksPort)
 }
 
-func (proxyip *ProxyIP) ProxyGetOne() *ProxyInfo {
+func (proxyip *Class) ProxyGetOne() *ProxyInfo {
 	//del_whitelist_by_remark("golang")
 	//return
 	Mutex.Lock()
@@ -75,7 +77,7 @@ func (proxyip *ProxyIP) ProxyGetOne() *ProxyInfo {
 	return item
 }
 
-func (proxyip *ProxyIP) user_get_ip_list() []*ProxyInfo {
+func (proxyip *Class) user_get_ip_list() []*ProxyInfo {
 	aRet := []*ProxyInfo{}
 	sUrl := proxyip.url_iplist_get
 	_, clientResBody, err := utils.HttpRequestByte("GET", sUrl, nil, nil, nil)

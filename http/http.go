@@ -14,16 +14,17 @@ import (
 )
 
 type Class struct {
-	HttpClient         *http.Client
+	HttpClient         http.Client
 	RequestUrl         string
 	RequestHeader      map[string]string
 	ResponseBody       []byte
 	ResponseStatusCode int
+	Debug              bool
 }
 
-func New() *Class {
-	this := &Class{}
-	this.HttpClient = &http.Client{}
+func New() Class {
+	this := Class{}
+	this.HttpClient = http.Client{}
 	return this
 }
 
@@ -80,7 +81,9 @@ func (this *Class) RequestByte(method string, sUrl string, query url.Values, bod
 	}
 	this.ResponseStatusCode = clientRes.StatusCode
 	clientResBody, err := ioutil.ReadAll(clientRes.Body) //取得后端服务器返回的数据
-	fmt.Println(string(clientResBody))
+	if this.Debug {
+		fmt.Println(string(clientResBody))
+	}
 	this.ResponseBody = clientResBody
 	clientRes.Body.Close()
 	if err != nil {
@@ -95,7 +98,7 @@ func (this *Class) SetTimeout(_duration time.Duration) {
 
 func (this *Class) Close() {
 	this.HttpClient.CloseIdleConnections()
-	this.HttpClient = nil
+	//this.HttpClient = nil
 	this = nil
 }
 
