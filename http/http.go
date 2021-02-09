@@ -22,8 +22,8 @@ type Class struct {
 	Debug              bool
 }
 
-func New() Class {
-	this := Class{}
+func New() *Class {
+	this := &Class{}
 	this.HttpClient = &http.Client{}
 	return this
 }
