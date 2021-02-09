@@ -3,28 +3,34 @@ package mysql
 import (
 	"fmt"
 
+	"github.com/firadio/goutils/mysql/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )
 
-type Mysql struct {
+type Class struct {
 	Db *sqlx.DB
 }
 
-func MysqlNew(dsn string) *Mysql {
+func New(dsn string) Class {
 	Db, err := sqlx.Open("mysql", dsn)
 	if err != nil {
 		fmt.Printf("mysql connect failed, detail is [%v]", err.Error())
 	}
-	mysql := &Mysql{}
-	mysql.Db = Db
-	return mysql
+	this := Class{}
+	this.Db = Db
+	return this
+}
+
+func (this *Class) Sql() sql.Class {
+	sql1 := sql.New(this)
+	return sql1
 }
 
 type MysqlQueryCB func([]string)
 
-func (mysql *Mysql) Query(sql string, fun MysqlQueryCB) error {
-	rows, err := mysql.Db.Query(sql)
+func (this *Class) Query(sql string, fun MysqlQueryCB) error {
+	rows, err := this.Db.Query(sql)
 	if err != nil {
 		fmt.Printf("query faied, error:[%v]", err.Error())
 		return err
