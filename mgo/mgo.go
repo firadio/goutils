@@ -60,3 +60,14 @@ func (mongo Mongo) Insert(collection string, data interface{}) {
 		return
 	}
 }
+
+func (mongo Mongo) Upsert(collection string, selector bson.M, set bson.M, setOnInsert bson.M) {
+	data := bson.M{}
+	data["$set"] = set
+	data["$setOnInsert"] = setOnInsert
+	_, err := mongo.Db.C(collection).Upsert(selector, data)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return
+}

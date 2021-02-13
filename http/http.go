@@ -68,7 +68,8 @@ func (this *Class) RequestByte(method string, sUrl string, query url.Values, bod
 	this.RequestHeader = header
 	clientReq, err := http.NewRequest(method, sUrl, body)
 	if err != nil {
-		return 0, nil, err
+		this.ResponseStatusCode = 1001
+		return 1001, nil, err
 	}
 	if header != nil {
 		for k, v := range header {
@@ -77,7 +78,8 @@ func (this *Class) RequestByte(method string, sUrl string, query url.Values, bod
 	}
 	clientRes, err := this.HttpClient.Do(clientReq) //向后端服务器提交数据
 	if err != nil {
-		return 0, nil, errors.New("RequestByte-HttpClient-Do:" + err.Error())
+		this.ResponseStatusCode = 1002
+		return 1002, nil, errors.New("RequestByte-HttpClient-Do:" + err.Error())
 	}
 	this.ResponseStatusCode = clientRes.StatusCode
 	clientResBody, err := ioutil.ReadAll(clientRes.Body) //取得后端服务器返回的数据
