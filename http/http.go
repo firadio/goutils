@@ -113,7 +113,7 @@ func ClientUncompress() {
 func (this *Class) Exec() error {
 	clientReq, err := http.NewRequest(this.Method, this.RequestUrl, this.RequestBody)
 	if err != nil {
-		this.ResponseStatusCode = 1001
+		this.ResponseStatusCode = 1
 		return err
 	}
 	if this.RequestHeader != nil {
@@ -123,7 +123,7 @@ func (this *Class) Exec() error {
 	}
 	clientRes, err := this.HttpClient.Do(clientReq) //向后端服务器提交数据
 	if err != nil {
-		this.ResponseStatusCode = 1002
+		this.ResponseStatusCode = 2
 		return errors.New("RequestByte-HttpClient-Do:" + err.Error())
 	}
 	this.ResponseStatusCode = clientRes.StatusCode
