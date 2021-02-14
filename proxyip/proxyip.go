@@ -44,13 +44,13 @@ func (this *ProxyIP) SetLocation(sLocation string) {
 	sUrl := "http://list.rola-ip.site:8088/user_get_ip_list?token=v8b42dmWJEm4KAKb1608965085813&qty=1&&country={country}&state={state}&city={city}&time=10&format=json&protocol=socks5&filter=1"
 	aLocation := strings.Split(sLocation, "\\")
 	sCountry := aLocation[0]
-	sUrl = strings.Replace(sUrl, "{country}", sCountry, 1)
+	sUrl = strings.Replace(sUrl, "{country}", url.QueryEscape(sCountry), 1)
 	sState := aLocation[1]
 	sState = strings.ReplaceAll(sState, " ", "")
-	sUrl = strings.Replace(sUrl, "{state}", sState, 1)
+	sUrl = strings.Replace(sUrl, "{state}", url.QueryEscape(sState), 1)
 	sCity := aLocation[2]
 	sCity = strings.ReplaceAll(sCity, " ", "")
-	sUrl = strings.Replace(sUrl, "{city}", sCity, 1)
+	sUrl = strings.Replace(sUrl, "{city}", url.QueryEscape(sCity), 1)
 	url_whitelist_add := "http://admin.rola-ip.co/user_add_whitelist?token=v8b42dmWJEm4KAKb1608965085813&remark={remark}&ip={ip}"
 	url_whitelist_get := "http://admin.rola-ip.co/user_get_whitelist?token=v8b42dmWJEm4KAKb1608965085813"
 	url_whitelist_del := "http://admin.rola-ip.co/user_del_whitelist?token=v8b42dmWJEm4KAKb1608965085813&ip={ip}"
