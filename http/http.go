@@ -1,7 +1,9 @@
 package http
 
 import (
+	"bytes"
 	"compress/gzip"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -17,9 +19,11 @@ type Class struct {
 	HttpClient         *http.Client
 	RequestUrl         string
 	RequestHeader      map[string]string
+	RequestBody        io.Reader
 	ResponseBody       []byte
 	ResponseStatusCode int
 	Debug              bool
+	Method             string
 }
 
 func New() *Class {
@@ -64,34 +68,12 @@ func (this *Class) RequestByte(method string, sUrl string, query url.Values, bod
 	if query != nil && len(query) > 0 {
 		sUrl += "?" + query.Encode()
 	}
+	this.Method = method
 	this.RequestUrl = sUrl
 	this.RequestHeader = header
-	clientReq, err := http.NewRequest(method, sUrl, body)
-	if err != nil {
-		this.ResponseStatusCode = 1001
-		return 1001, nil, err
-	}
-	if header != nil {
-		for k, v := range header {
-			clientReq.Header.Set(k, v)
-		}
-	}
-	clientRes, err := this.HttpClient.Do(clientReq) //向后端服务器提交数据
-	if err != nil {
-		this.ResponseStatusCode = 1002
-		return 1002, nil, errors.New("RequestByte-HttpClient-Do:" + err.Error())
-	}
-	this.ResponseStatusCode = clientRes.StatusCode
-	clientResBody, err := ioutil.ReadAll(clientRes.Body) //取得后端服务器返回的数据
-	if this.Debug {
-		fmt.Println(string(clientResBody))
-	}
-	this.ResponseBody = clientResBody
-	clientRes.Body.Close()
-	if err != nil {
-		return clientRes.StatusCode, nil, errors.New("RequestByte-ReadAll:" + err.Error())
-	}
-	return clientRes.StatusCode, clientResBody, nil
+	this.RequestBody = body
+	err := this.Exec()
+	return this.ResponseStatusCode, this.ResponseBody, err
 }
 
 func (this *Class) SetTimeout(_duration time.Duration) {
@@ -126,4 +108,41 @@ func ClientUncompress() {
 		return
 	}
 	reader.Close()
+}
+
+func (this *Class) Exec() error {
+	clientReq, err := http.NewRequest(this.Method, this.RequestUrl, this.RequestBody)
+	if err != nil {
+		this.ResponseStatusCode = 1001
+		return err
+	}
+	if this.RequestHeader != nil {
+		for k, v := range this.RequestHeader {
+			clientReq.Header.Set(k, v)
+		}
+	}
+	clientRes, err := this.HttpClient.Do(clientReq) //向后端服务器提交数据
+	if err != nil {
+		this.ResponseStatusCode = 1002
+		return errors.New("RequestByte-HttpClient-Do:" + err.Error())
+	}
+	this.ResponseStatusCode = clientRes.StatusCode
+	this.ResponseBody, err = ioutil.ReadAll(clientRes.Body) //取得后端服务器返回的数据
+	clientRes.Body.Close()
+	if err != nil {
+		return errors.New("RequestByte-ReadAll:" + err.Error())
+	}
+	if this.Debug {
+		fmt.Println(string(this.ResponseBody))
+	}
+	return nil
+}
+
+func (this *Class) SetRequestJson(v map[string]string) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	this.RequestBody = bytes.NewBuffer(b)
+	return nil
 }
