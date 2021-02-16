@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/firadio/goutils/utils"
+	"github.com/firadio/goutils/http"
 )
 
 type Class struct {
@@ -17,11 +17,13 @@ type Class struct {
 	Enable         bool
 	Unique         bool //是否去重
 	mIpport        map[string]time.Time
+	http1          *http.Class
 }
 
 func New() *Class {
 	this := &Class{}
 	this.mIpport = map[string]time.Time{}
+	this.http1 = http.New()
 	return this
 }
 
@@ -105,10 +107,10 @@ func (proxyip *Class) ProxyGetOne() *ProxyInfo {
 	return item
 }
 
-func (proxyip *Class) user_get_ip_list() []*ProxyInfo {
+func (this *Class) user_get_ip_list() []*ProxyInfo {
 	aRet := []*ProxyInfo{}
-	sUrl := proxyip.url_iplist_get
-	_, clientResBody, err := utils.HttpRequestByte("GET", sUrl, nil, nil, nil)
+	sUrl := this.url_iplist_get
+	_, clientResBody, err := this.http1.RequestByte("GET", sUrl, nil, nil, nil)
 	if err != nil {
 		fmt.Println("user_get_ip_list", err)
 		return aRet

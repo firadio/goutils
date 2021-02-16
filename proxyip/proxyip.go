@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/firadio/goutils/utils"
+	"github.com/firadio/goutils/http"
 )
 
 type ProxyIP struct {
@@ -195,7 +195,8 @@ func HttpRequestJson(method string, sUrl string, query url.Values, userReqJson i
 	if err != nil {
 		return 0, apiResJson, err
 	}
-	statusCode, clientResBody, err := utils.HttpRequestByte(method, sUrl, query, bytes.NewBuffer(bReqData), nil)
+	http1 := http.New()
+	statusCode, clientResBody, err := http1.RequestByte(method, sUrl, query, bytes.NewBuffer(bReqData), nil)
 	if err != nil {
 		return statusCode, apiResJson, err
 	}
