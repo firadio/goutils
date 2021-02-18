@@ -17,17 +17,18 @@ import (
 
 type Class struct {
 	HttpClient         *http.Client
+	RequestMethod      string
 	RequestUrl         string
 	RequestHeader      map[string]string
 	RequestBody        io.Reader
 	ResponseBody       []byte
 	ResponseStatusCode int
 	Debug              bool
-	Method             string
 }
 
 func New() *Class {
 	this := &Class{}
+	this.RequestHeader = map[string]string{}
 	this.HttpClient = &http.Client{}
 	return this
 }
@@ -68,7 +69,7 @@ func (this *Class) RequestByte(method string, sUrl string, query url.Values, bod
 	if query != nil && len(query) > 0 {
 		sUrl += "?" + query.Encode()
 	}
-	this.Method = method
+	this.RequestMethod = method
 	this.RequestUrl = sUrl
 	this.RequestHeader = header
 	this.RequestBody = body
@@ -111,7 +112,7 @@ func ClientUncompress() {
 }
 
 func (this *Class) Exec() error {
-	clientReq, err := http.NewRequest(this.Method, this.RequestUrl, this.RequestBody)
+	clientReq, err := http.NewRequest(this.RequestMethod, this.RequestUrl, this.RequestBody)
 	if err != nil {
 		this.ResponseStatusCode = 1
 		return err
@@ -120,6 +121,11 @@ func (this *Class) Exec() error {
 		for k, v := range this.RequestHeader {
 			clientReq.Header.Set(k, v)
 		}
+	}
+	if this.Debug {
+		fmt.Println(this.RequestUrl)
+		v, _ := json.Marshal(this.RequestHeader)
+		fmt.Println(string(v))
 	}
 	clientRes, err := this.HttpClient.Do(clientReq) //向后端服务器提交数据
 	if err != nil {
@@ -144,5 +150,16 @@ func (this *Class) SetRequestJson(v map[string]string) error {
 		return err
 	}
 	this.RequestBody = bytes.NewBuffer(b)
+	return nil
+}
+
+func (this *Class) SetPost(kv map[string]string) error {
+	this.RequestHeader["Content-Type"] = "application/x-www-form-urlencoded"
+	u := url.Values{}
+	for k, v := range kv {
+		u.Add(k, v)
+	}
+	//fmt.Println(u.Encode())
+	this.RequestBody = bytes.NewBuffer([]byte(u.Encode()))
 	return nil
 }
