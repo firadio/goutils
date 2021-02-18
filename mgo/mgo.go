@@ -54,6 +54,14 @@ func (mongo Mongo) UpdateById(collection string, id bson.ObjectId, data bson.M) 
 	}
 }
 
+func (mongo Mongo) Update(collection string, selector bson.M, data bson.M) {
+	data = bson.M{"$set": data}
+	if err := mongo.Db.C(collection).Update(selector, data); err != nil {
+		fmt.Println(err)
+		return
+	}
+}
+
 func (mongo Mongo) Insert(collection string, data interface{}) {
 	if err := mongo.Db.C(collection).Insert(data); err != nil {
 		fmt.Println(err)
