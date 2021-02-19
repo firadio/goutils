@@ -83,8 +83,8 @@ func (this *Class) SetTimeout(_duration time.Duration) {
 
 func (this *Class) Close() {
 	this.HttpClient.CloseIdleConnections()
-	this.HttpClient = nil
-	this = nil
+	//this.HttpClient = nil
+	//this = nil
 }
 
 // client 解析 gzip 返回
