@@ -34,15 +34,14 @@ func (proxyip *ProxyIP) SetURL(url_iplist_get string, url_whitelist_add string, 
 	proxyip.url_whitelist_del = url_whitelist_del
 }
 
-func NewLocation(sLocation string) *ProxyIP {
+func NewLocation(aLocation []string) *ProxyIP {
 	this := &ProxyIP{}
-	this.SetLocation(sLocation)
+	this.SetLocation(aLocation)
 	return this
 }
 
-func (this *ProxyIP) SetLocation(sLocation string) {
-	sUrl := "http://list.rola-ip.site:8088/user_get_ip_list?token=v8b42dmWJEm4KAKb1608965085813&qty=1&&country={country}&state={state}&city={city}&time=10&format=json&protocol=socks5&filter=1"
-	aLocation := strings.Split(sLocation, "\\")
+func (this *ProxyIP) SetLocation(aLocation []string) {
+	sUrl := "http://list.rola-ip.site:8088/user_get_ip_list?token=v8b42dmWJEm4KAKb1608965085813&type=4g&qty=1&country={country}&state={state}&city={city}&time=10&format=json&protocol=socks5&filter=1"
 	sCountry := aLocation[0]
 	sUrl = strings.Replace(sUrl, "{country}", url.QueryEscape(sCountry), 1)
 	sState := aLocation[1]
