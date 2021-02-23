@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"time"
@@ -20,14 +20,16 @@ type Class struct {
 	RequestMethod      string
 	RequestUrl         string
 	RequestHeader      map[string]string
-	RequestBody        io.Reader
+	RequestBody        []byte
 	ResponseBody       []byte
 	ResponseStatusCode int
 	Debug              bool
+	oRand              *rand.Rand
 }
 
 func New() *Class {
 	this := &Class{}
+	this.oRand = rand.New(rand.NewSource(time.Now().UnixNano()))
 	this.RequestHeader = map[string]string{}
 	this.HttpClient = &http.Client{}
 	return this
@@ -64,7 +66,7 @@ func (this *Class) NoTransport() {
 	this.HttpClient.Transport = nil
 }
 
-func (this *Class) RequestByte(method string, sUrl string, query url.Values, body io.Reader, header map[string]string) (int, []byte, error) {
+func (this *Class) RequestByte(method string, sUrl string, query url.Values, body []byte, header map[string]string) (int, []byte, error) {
 	//以byte数组返回结果
 	if query != nil && len(query) > 0 {
 		sUrl += "?" + query.Encode()
@@ -112,7 +114,8 @@ func ClientUncompress() {
 }
 
 func (this *Class) Exec() error {
-	clientReq, err := http.NewRequest(this.RequestMethod, this.RequestUrl, this.RequestBody)
+	bufferBody := bytes.NewBuffer(this.RequestBody)
+	clientReq, err := http.NewRequest(this.RequestMethod, this.RequestUrl, bufferBody)
 	if err != nil {
 		this.ResponseStatusCode = 1
 		return err
@@ -149,7 +152,7 @@ func (this *Class) SetRequestJson(v map[string]string) error {
 	if err != nil {
 		return err
 	}
-	this.RequestBody = bytes.NewBuffer(b)
+	this.RequestBody = b
 	return nil
 }
 
@@ -160,6 +163,15 @@ func (this *Class) SetPost(kv map[string]string) error {
 		u.Add(k, v)
 	}
 	//fmt.Println(u.Encode())
-	this.RequestBody = bytes.NewBuffer([]byte(u.Encode()))
+	this.RequestBody = []byte(u.Encode())
 	return nil
+}
+
+func (this *Class) GetRandomString(l int, str string) string {
+	bytes := []byte(str)
+	result := []byte{}
+	for i := 0; i < l; i++ {
+		result = append(result, bytes[this.oRand.Intn(len(bytes))])
+	}
+	return string(result)
 }
