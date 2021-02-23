@@ -139,7 +139,7 @@ func (this *Class) Exec() error {
 		return errors.New("RequestByte-ReadAll:" + err.Error())
 	}
 	if this.Debug {
-		fmt.Println(string(this.ResponseBody))
+		fmt.Println("http.ResponseBody", string(this.ResponseBody))
 	}
 	return nil
 }
