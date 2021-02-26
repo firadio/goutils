@@ -1,7 +1,6 @@
 package proxyip
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -204,7 +203,7 @@ func HttpRequestJson(method string, sUrl string, query url.Values, userReqJson i
 		return 0, apiResJson, err
 	}
 	http1 := http.New()
-	statusCode, clientResBody, err := http1.RequestByte(method, sUrl, query, bytes.NewBuffer(bReqData), nil)
+	statusCode, clientResBody, err := http1.RequestByte(method, sUrl, query, bReqData, nil)
 	if err != nil {
 		return statusCode, apiResJson, err
 	}

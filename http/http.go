@@ -126,9 +126,10 @@ func (this *Class) Exec() error {
 		}
 	}
 	if this.Debug {
-		fmt.Println(this.RequestUrl)
+		fmt.Println("this.RequestUrl:", this.RequestUrl)
 		v, _ := json.Marshal(this.RequestHeader)
-		fmt.Println(string(v))
+		fmt.Println("this.RequestHeader:", string(v))
+		fmt.Println("this.RequestBody:", string(this.RequestBody))
 	}
 	clientRes, err := this.HttpClient.Do(clientReq) //向后端服务器提交数据
 	if err != nil {
@@ -142,7 +143,7 @@ func (this *Class) Exec() error {
 		return errors.New("RequestByte-ReadAll:" + err.Error())
 	}
 	if this.Debug {
-		fmt.Println("http.ResponseBody", string(this.ResponseBody))
+		fmt.Println("http.ResponseBody:", string(this.ResponseBody))
 	}
 	return nil
 }
