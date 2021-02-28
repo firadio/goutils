@@ -2,6 +2,7 @@ package redis
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	red "github.com/gomodule/redigo/redis"
@@ -15,15 +16,15 @@ func New(sHostPort string, sPassword string, iDatabase int) *Class {
 	this := &Class{}
 	this.pool = &red.Pool{
 		MaxIdle:     256,
-		MaxActive:   100,
+		MaxActive:   1000,
 		IdleTimeout: time.Duration(120),
 		Dial: func() (red.Conn, error) {
 			return red.Dial(
 				"tcp",
 				sHostPort, //redis.dev:6379
-				red.DialReadTimeout(time.Duration(1000)*time.Millisecond),
-				red.DialWriteTimeout(time.Duration(1000)*time.Millisecond),
-				red.DialConnectTimeout(time.Duration(1000)*time.Millisecond),
+				red.DialReadTimeout(time.Duration(100)*time.Second),
+				red.DialWriteTimeout(time.Duration(100)*time.Second),
+				red.DialConnectTimeout(time.Duration(3)*time.Second),
 				red.DialPassword(sPassword), //密码
 				red.DialDatabase(iDatabase), //数据库编号
 			)
@@ -85,4 +86,25 @@ func (redis *Class) LPOP(key string) string {
 
 func (redis *Class) RPOP(key string) string {
 	return redis.POP(key, "RPOP")
+}
+
+func (redis *Class) BXPOP(key string, cmd string, timeout int) string {
+	ret, err := RedisExec_Do(redis.pool, cmd, key, strconv.Itoa(timeout))
+	if err != nil {
+		fmt.Printf("%s(%s) %s\r\n", cmd, key, err)
+		return ""
+	}
+	if ret == nil {
+		return ""
+	}
+	s := ret.([]interface{})
+	return string(s[1].([]byte))
+}
+
+func (redis *Class) BLPOP(key string, timeout int) string {
+	return redis.BXPOP(key, "BLPOP", timeout)
+}
+
+func (redis *Class) BRPOP(key string, timeout int) string {
+	return redis.BXPOP(key, "BRPOP", timeout)
 }
