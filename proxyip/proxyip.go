@@ -3,7 +3,6 @@ package proxyip
 import (
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"net/url"
 	"strconv"
 	"strings"
@@ -11,6 +10,7 @@ import (
 	"time"
 
 	"github.com/firadio/goutils/http"
+	"github.com/firadio/goutils/rand"
 )
 
 type ProxyIP struct {
@@ -39,14 +39,10 @@ func NewLocation(aLocation []string) *ProxyIP {
 	this.SetLocation(aLocation)
 	return this
 }
-func randInt(min int, max int) int {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return min + r.Intn(max-min)
-}
 
 func (this *ProxyIP) SetLocation(aLocation []string) {
 	sUrl := "http://list.rola-ip.site:8088/user_get_ip_list?token=v8b42dmWJEm4KAKb1608965085813&type=4g&qty=1&country={country}&state={state}&city={city}&time=10&format=json&protocol=socks5&filter=1"
-	randYesOrNo := randInt(0, 1) == 0
+	randYesOrNo := rand.RandInt64(0, 1) == 0
 	if randYesOrNo {
 		sUrl = "http://list.rola-ip.site:8088/user_get_ip_list?token=v8b42dmWJEm4KAKb1608965085813&qty=1&country={country}&state={state}&city={city}&time=10&format=json&protocol=socks5&filter=1"
 	}
