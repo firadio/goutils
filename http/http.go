@@ -184,7 +184,11 @@ func (this *Class) GetRandomString(l int, str string) string {
 	bytes := []byte(str)
 	result := []byte{}
 	for i := 0; i < l; i++ {
-		result = append(result, bytes[this.oRand.Intn(len(bytes))])
+		iRand := this.oRand.Intn(len(bytes))
+		if iRand < 0 {
+			continue
+		}
+		result = append(result, bytes[iRand])
 	}
 	return string(result)
 }
