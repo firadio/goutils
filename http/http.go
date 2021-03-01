@@ -10,6 +10,7 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
+	"sync"
 	"time"
 
 	"golang.org/x/net/proxy"
@@ -19,20 +20,27 @@ type Class struct {
 	HttpClient         *http.Client
 	RequestMethod      string
 	RequestUrl         string
-	RequestHeader      map[string]string
+	requestHeader      map[string]string
 	RequestBody        []byte
 	ResponseBody       []byte
 	ResponseStatusCode int
 	Debug              bool
 	oRand              *rand.Rand
+	mutex              sync.Mutex
 }
 
 func New() *Class {
 	this := &Class{}
 	this.oRand = rand.New(rand.NewSource(time.Now().UnixNano()))
-	this.RequestHeader = map[string]string{}
+	this.requestHeader = map[string]string{}
 	this.HttpClient = &http.Client{}
 	return this
+}
+
+func (this *Class) SetRequestHeader(header map[string]string) {
+	this.mutex.Lock()
+	this.requestHeader = header
+	this.mutex.Unlock()
 }
 
 func (this *Class) SetProxy(hostport string) error {
@@ -73,7 +81,7 @@ func (this *Class) RequestByte(method string, sUrl string, query url.Values, bod
 	}
 	this.RequestMethod = method
 	this.RequestUrl = sUrl
-	this.RequestHeader = header
+	this.requestHeader = header
 	this.RequestBody = body
 	err := this.Exec()
 	return this.ResponseStatusCode, this.ResponseBody, err
@@ -120,14 +128,16 @@ func (this *Class) Exec() error {
 		this.ResponseStatusCode = 1
 		return err
 	}
-	if this.RequestHeader != nil {
-		for k, v := range this.RequestHeader {
+	this.mutex.Lock()
+	if this.requestHeader != nil {
+		for k, v := range this.requestHeader {
 			clientReq.Header.Set(k, v)
 		}
 	}
+	this.mutex.Unlock()
 	if this.Debug {
 		fmt.Println("this.RequestUrl:", this.RequestUrl)
-		v, _ := json.Marshal(this.RequestHeader)
+		v, _ := json.Marshal(this.requestHeader)
 		fmt.Println("this.RequestHeader:", string(v))
 		fmt.Println("this.RequestBody:", string(this.RequestBody))
 	}
@@ -158,7 +168,9 @@ func (this *Class) SetRequestJson(v map[string]string) error {
 }
 
 func (this *Class) SetPost(kv map[string]string) error {
-	this.RequestHeader["Content-Type"] = "application/x-www-form-urlencoded"
+	this.mutex.Lock()
+	this.requestHeader["Content-Type"] = "application/x-www-form-urlencoded"
+	this.mutex.Unlock()
 	u := url.Values{}
 	for k, v := range kv {
 		u.Add(k, v)
@@ -172,7 +184,11 @@ func (this *Class) GetRandomString(l int, str string) string {
 	bytes := []byte(str)
 	result := []byte{}
 	for i := 0; i < l; i++ {
-		result = append(result, bytes[this.oRand.Intn(len(bytes))])
+		iRand := this.oRand.Intn(len(bytes))
+		if iRand < 0 {
+			continue
+		}
+		result = append(result, bytes[iRand])
 	}
 	return string(result)
 }
